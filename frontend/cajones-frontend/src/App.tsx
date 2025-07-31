@@ -5,6 +5,7 @@ import Home from './pages/home'
 import Historial from './pages/historial'
 import TiposObjeto from './pages/tipos-objeto'
 import Recomendaciones from './pages/recomendaciones'
+import CajonDetalle from './pages/cajon-detalle'
 import NotFound from './pages/NotFound'
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
           <Route path="/historial" element={<Historial />} />
           <Route path="/tipos-objeto" element={<TiposObjeto />} />
           <Route path="/recomendaciones" element={<Recomendaciones />} />
+          <Route path="/cajon/:id" element={<CajonDetalle />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>

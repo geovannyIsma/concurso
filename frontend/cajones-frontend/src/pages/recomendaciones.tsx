@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import LayoutHome from '../layout/layout_home';
 import { apiService } from '../services/api';
-import type { Recomendacion } from '../services/api';
+import type { Cajon, Recomendacion } from '../services/api';
 
 const Recomendaciones: React.FC = () => {
-  const [recomendacion, setRecomendacion] = useState<string>('');
-  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const [cajones, setCajones] = useState<Cajon[]>([]);
+  const [recomendacionGeneral, setRecomendacionGeneral] = useState<string>('');
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [tipoOrdenamiento, setTipoOrdenamiento] = useState('tipo');
 
@@ -15,12 +18,30 @@ const Recomendaciones: React.FC = () => {
     { value: 'mixto', label: 'Mixto', description: 'Combina tipo y tamaño' }
   ];
 
+  const cargarDatos = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const [cajonesData, recomendacionData] = await Promise.all([
+        apiService.getCajones(),
+        apiService.getRecomendacion(tipoOrdenamiento)
+      ]);
+      setCajones(Array.isArray(cajonesData) ? cajonesData : []);
+      setRecomendacionGeneral(recomendacionData.mensaje);
+    } catch (err) {
+      setError('Error al cargar los datos. Por favor, intenta de nuevo.');
+      console.error('Error cargando datos:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const generarRecomendacion = async () => {
     try {
       setLoading(true);
       setError(null);
       const data = await apiService.getRecomendacion(tipoOrdenamiento);
-      setRecomendacion(data.mensaje);
+      setRecomendacionGeneral(data.mensaje);
     } catch (err) {
       setError('Error al generar la recomendación. Por favor, intenta de nuevo.');
       console.error('Error generando recomendación:', err);
@@ -30,7 +51,7 @@ const Recomendaciones: React.FC = () => {
   };
 
   useEffect(() => {
-    generarRecomendacion();
+    cargarDatos();
   }, []);
 
   return (
@@ -85,13 +106,22 @@ const Recomendaciones: React.FC = () => {
           </div>
         </div>
 
-        {/* Recomendación actual */}
+        {/* Recomendación general */}
         <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="text-2xl">💡</div>
-            <h3 className="text-lg font-semibold text-gray-900">
-              Recomendación Actual
-            </h3>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-3">
+              <div className="text-2xl">💡</div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Recomendación General
+              </h3>
+            </div>
+            <button
+              onClick={generarRecomendacion}
+              disabled={loading}
+              className="bg-primary hover:bg-primary-dark text-white px-3 py-1 rounded-md text-sm transition-colors duration-200 disabled:opacity-50"
+            >
+              {loading ? 'Generando...' : 'Nueva'}
+            </button>
           </div>
 
           {error ? (
@@ -111,13 +141,13 @@ const Recomendaciones: React.FC = () => {
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
               <p className="text-gray-600">Generando recomendación...</p>
             </div>
-          ) : recomendacion ? (
+          ) : recomendacionGeneral ? (
             <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-6 border border-blue-200">
               <div className="flex items-start space-x-3">
                 <div className="text-2xl">🤖</div>
                 <div className="flex-1">
                   <p className="text-gray-900 text-lg leading-relaxed">
-                    {recomendacion}
+                    {recomendacionGeneral}
                   </p>
                   <div className="mt-4 flex items-center space-x-2 text-sm text-gray-600">
                     <span>💡</span>
@@ -135,6 +165,53 @@ const Recomendaciones: React.FC = () => {
           )}
         </div>
 
+        {/* Lista de cajones con recomendaciones específicas */}
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Cajones Disponibles
+          </h3>
+          <p className="text-gray-600 mb-4">
+            Haz clic en un cajón para ver sus detalles y recomendaciones específicas de organización.
+          </p>
+          
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[...Array(6)].map((_, index) => (
+                <div key={index} className="animate-pulse">
+                  <div className="h-32 bg-gray-200 rounded-lg"></div>
+                </div>
+              ))}
+            </div>
+          ) : cajones.length === 0 ? (
+            <div className="text-center py-8">
+              <div className="text-4xl mb-4">📦</div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No hay cajones</h3>
+              <p className="text-gray-500">Crea algunos cajones para comenzar a recibir recomendaciones.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {cajones.map((cajon) => (
+                <div
+                  key={cajon.id}
+                  onClick={() => navigate(`/cajon/${cajon.id}`)}
+                  className="bg-gray-50 rounded-lg p-4 cursor-pointer hover:bg-gray-100 transition-colors duration-200 border border-gray-200"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-medium text-gray-900">{cajon.nombre}</h4>
+                    <span className="text-2xl">📦</span>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-2">
+                    {cajon.objetos?.length || 0} / {cajon.capacidad_maxima} objetos
+                  </p>
+                  <div className="text-xs text-primary font-medium">
+                    Ver detalles y recomendaciones →
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Información adicional */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-white rounded-lg border border-gray-200 p-6">
@@ -145,7 +222,7 @@ const Recomendaciones: React.FC = () => {
             <ul className="space-y-2 text-gray-600">
               <li className="flex items-start space-x-2">
                 <span>•</span>
-                <span>Analiza la distribución actual de objetos en tus cajones</span>
+                <span>Analiza la distribución actual de objetos en todos tus cajones</span>
               </li>
               <li className="flex items-start space-x-2">
                 <span>•</span>
@@ -153,7 +230,7 @@ const Recomendaciones: React.FC = () => {
               </li>
               <li className="flex items-start space-x-2">
                 <span>•</span>
-                <span>Genera sugerencias basadas en el tipo de organización seleccionado</span>
+                <span>Genera recomendaciones generales para todo el sistema</span>
               </li>
               <li className="flex items-start space-x-2">
                 <span>•</span>
@@ -170,15 +247,15 @@ const Recomendaciones: React.FC = () => {
             <ul className="space-y-2 text-gray-600">
               <li className="flex items-start space-x-2">
                 <span>•</span>
-                <span>Revisa las recomendaciones regularmente</span>
+                <span>Revisa las recomendaciones generales aquí</span>
+              </li>
+              <li className="flex items-start space-x-2">
+                <span>•</span>
+                <span>Haz clic en un cajón para ver recomendaciones específicas</span>
               </li>
               <li className="flex items-start space-x-2">
                 <span>•</span>
                 <span>Prueba diferentes tipos de organización</span>
-              </li>
-              <li className="flex items-start space-x-2">
-                <span>•</span>
-                <span>Considera el espacio disponible antes de aplicar cambios</span>
               </li>
               <li className="flex items-start space-x-2">
                 <span>•</span>
