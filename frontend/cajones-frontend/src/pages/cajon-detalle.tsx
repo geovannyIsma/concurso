@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import LayoutHome from '../layout/layout_home';
 import ObjetoForm from '../components/ObjetoForm';
-import ObjetosOrdenados from '../components/ObjetosOrdenados';
 import { apiService } from '../services/api';
 import type { Cajon, TipoObjeto, CajonObjeto, Recomendacion } from '../services/api';
 
@@ -202,7 +201,7 @@ const CajonDetalle: React.FC = () => {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Columna izquierda - Detalles del cajón */}
           <div className="lg:col-span-1 space-y-6">
             {/* Estadísticas */}
@@ -240,42 +239,6 @@ const CajonDetalle: React.FC = () => {
               </div>
             </div>
 
-            {/* Lista de objetos */}
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Objetos en el Cajón</h3>
-              {(cajon.objetos?.length || 0) === 0 ? (
-                <p className="text-gray-500 italic">No hay objetos en este cajón</p>
-              ) : (
-                <div className="space-y-3">
-                  {(cajon.objetos || []).map((objeto) => (
-                    <div key={objeto.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <span className="text-lg">📦</span>
-                        <div>
-                          <p className="font-medium text-gray-900">{objeto.nombre_objeto}</p>
-                          <p className="text-sm text-gray-600">{objeto.tipo_objeto.nombre}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getTamanioColor(objeto.tamanio)}`}>
-                          {getTamanioLabel(objeto.tamanio)}
-                        </span>
-                        <button
-                          onClick={() => handleDeleteObjeto(objeto.id)}
-                          className="text-red-500 hover:text-red-700 text-lg"
-                        >
-                          🗑️
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Columna central - Ordenamiento */}
-          <div className="lg:col-span-1 space-y-6">
             {/* Selector de tipo de ordenamiento */}
             <div className="bg-white rounded-lg border border-gray-200 p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
@@ -309,13 +272,49 @@ const CajonDetalle: React.FC = () => {
               </div>
             </div>
 
-            {/* Objetos Ordenados */}
+            {/* Lista de objetos ordenados */}
             <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <ObjetosOrdenados
-                tipoOrdenamiento={tipoOrdenamiento}
-                resultado={objetosOrdenados}
-                loading={ordenamientoLoading}
-              />
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Objetos en el Cajón</h3>
+              {ordenamientoLoading ? (
+                <div className="space-y-4">
+                  {[...Array(3)].map((_, index) => (
+                    <div key={index} className="animate-pulse">
+                      <div className="h-12 bg-gray-200 rounded-lg"></div>
+                    </div>
+                  ))}
+                </div>
+              ) : (objetosOrdenados?.length || 0) === 0 ? (
+                <p className="text-gray-500 italic">No hay objetos en este cajón</p>
+              ) : (
+                <div className="space-y-3">
+                  {/* Aplanar si viene agrupado */}
+                  {(objetosOrdenados[0]?.objetos
+                    ? objetosOrdenados.flatMap((g: any) => g.objetos)
+                    : objetosOrdenados
+                  ).map((objeto: CajonObjeto, idx: number) => (
+                    <div key={objeto.id || idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <span className="text-lg">📦</span>
+                        <div>
+                          <p className="font-medium text-gray-900">{objeto.nombre_objeto}</p>
+                          <p className="text-sm text-gray-600">{objeto.tipo_objeto?.nombre}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getTamanioColor(objeto.tamanio)}`}>
+                          {getTamanioLabel(objeto.tamanio)}
+                        </span>
+                        <button
+                          onClick={() => handleDeleteObjeto(objeto.id)}
+                          className="text-red-500 hover:text-red-700 text-lg"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
