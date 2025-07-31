@@ -4,7 +4,7 @@ from .views import (
     CajonListView, CajonDetailView, CajonHistorialListView, CajonHistorialDetailView,
     TipoObjetoListView, TipoObjetoDetailView, CajonObjetoListView, CajonObjetoDetailView,
     CajonObjetosView, CajonHistorialView, CajonCapacidadView, RecomendacionSimpleView,
-    CajonObjetosOrdenadosView
+    CajonObjetosOrdenadosView, OrdenamientoView
 )
 
 urlpatterns = [
@@ -30,4 +30,7 @@ urlpatterns = [
     
     # Ruta de Recomendación
     path('api/recomendacion/', RecomendacionSimpleView.as_view(), name='recomendacion-simple'),
+
+    # Ruta de Ordenamiento
+    path('api/ordenamiento/', OrdenamientoView.as_view(), name='ordenamiento'),
 ]
