@@ -316,7 +316,7 @@ class RecomendacionService:
     def generar_recomendaciones_organizacion(self, tipo_ordenamiento='tipo'):
         """
         Generar 3 recomendaciones específicas de organización usando Gemini AI
-        tipo_ordenamiento: 'tipo', 'tamanio', 'mixto'
+        tipo_ordenamiento: 'tipo', 'tamanio'
         """
         try:
             contexto = self.generar_contexto_completo()

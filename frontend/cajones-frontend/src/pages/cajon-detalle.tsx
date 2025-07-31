@@ -291,28 +291,48 @@ const CajonDetalle: React.FC = () => {
                   {(objetosOrdenados[0]?.objetos
                     ? objetosOrdenados.flatMap((g: any) => g.objetos)
                     : objetosOrdenados
-                  ).map((objeto: CajonObjeto, idx: number) => (
-                    <div key={objeto.id || idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <span className="text-lg">📦</span>
-                        <div>
-                          <p className="font-medium text-gray-900">{objeto.nombre_objeto}</p>
-                          <p className="text-sm text-gray-600">{objeto.tipo_objeto?.nombre}</p>
+                  ).map((objeto: CajonObjeto, idx: number) => {
+                    // Buscar el tipo de objeto por id si no viene expandido
+                    let tipoNombre = '';
+                    if (typeof objeto.tipo_objeto === 'object' && objeto.tipo_objeto !== null) {
+                      tipoNombre = objeto.tipo_objeto.nombre || 'Sin tipo';
+                    } else if (typeof objeto.tipo_objeto === 'number') {
+                      const tipo = tiposObjeto.find(t =>
+                        typeof objeto.tipo_objeto === 'number'
+                          ? t.id === objeto.tipo_objeto
+                          : t.id === objeto.tipo_objeto.id
+                      );
+                      tipoNombre = tipo ? tipo.nombre : 'Sin tipo';
+                    } else {
+                      tipoNombre = 'Sin tipo';
+                    }
+                    return (
+                      <div key={objeto.id || idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <span className="text-lg">📦</span>
+                          <div>
+                            <p className="font-medium text-gray-900">
+                              {objeto.nombre_objeto}
+                              <span className="ml-2 text-xs text-gray-500">
+                                ({tipoNombre})
+                              </span>
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${getTamanioColor(objeto.tamanio)}`}>
+                            {getTamanioLabel(objeto.tamanio)}
+                          </span>
+                          <button
+                            onClick={() => handleDeleteObjeto(objeto.id)}
+                            className="text-red-500 hover:text-red-700 text-lg"
+                          >
+                            🗑️
+                          </button>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getTamanioColor(objeto.tamanio)}`}>
-                          {getTamanioLabel(objeto.tamanio)}
-                        </span>
-                        <button
-                          onClick={() => handleDeleteObjeto(objeto.id)}
-                          className="text-red-500 hover:text-red-700 text-lg"
-                        >
-                          🗑️
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
