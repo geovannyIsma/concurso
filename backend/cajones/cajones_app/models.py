@@ -26,13 +26,14 @@ class TipoObjeto(models.Model):
 
     def __str__(self):
         return self.nombre
-    
-class CajonTamanio(models.TextChoices):
-    PEQUENO = 'PE', 'Pequeño'
-    MEDIANO = 'ME', 'Mediano'
-    GRANDE = 'GR', 'Grande'
+
 
 class CajonObjeto(models.Model):
+    class CajonTamanio(models.TextChoices):
+        PEQUENO = 'PE', 'Pequeño'
+        MEDIANO = 'ME', 'Mediano'
+        GRANDE = 'GR', 'Grande'
+    
     cajon = models.ForeignKey(Cajon, on_delete=models.CASCADE, related_name='objetos')
     nombre_objeto = models.CharField(max_length=100)
     tipo_objeto = models.ForeignKey('TipoObjeto', on_delete=models.CASCADE, related_name='objetos')
