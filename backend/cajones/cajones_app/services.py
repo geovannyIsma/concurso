@@ -143,10 +143,6 @@ class CajonService:
 
 
 class RecomendacionService:
-    """
-    Servicio para generar recomendaciones de organización usando Gemini AI
-    """
-    
     def __init__(self):
         # Configurar Gemini AI
         api_key = os.getenv('GEMINI_API_KEY')
@@ -156,138 +152,124 @@ class RecomendacionService:
         genai.configure(api_key=api_key)
         self.model = genai.GenerativeModel('gemini-pro')
     
-    def generar_contexto_base_datos(self):
-        """Generar contexto de la base de datos para Gemini"""
+    def generar_contexto_completo(self):
+        """Generar contexto completo de la base de datos para Gemini"""
         cajones = Cajon.objects.all()
         objetos = CajonObjeto.objects.all()
         tipos = TipoObjeto.objects.all()
         
-        contexto = "CONTEXTO DE LA BASE DE DATOS:\n\n"
+        contexto = "CONTEXTO COMPLETO DEL SISTEMA DE CAJONES:\n\n"
         
-        # Información de cajones
-        contexto += "CAJONES DISPONIBLES:\n"
+        # Información detallada de cajones
+        contexto += "=== CAJONES DISPONIBLES ===\n"
         for cajon in cajones:
             objetos_count = cajon.objetos.count()
             capacidad_disponible = cajon.capacidad_maxima - objetos_count
-            contexto += f"- {cajon.nombre}: {objetos_count}/{cajon.capacidad_maxima} objetos (disponible: {capacidad_disponible})\n"
+            porcentaje_ocupacion = (objetos_count / cajon.capacidad_maxima) * 100
+            
+            contexto += f"CAJÓN: {cajon.nombre}\n"
+            contexto += f"   - Capacidad: {objetos_count}/{cajon.capacidad_maxima} objetos\n"
+            contexto += f"   - Espacio disponible: {capacidad_disponible}\n"
+            contexto += f"   - Ocupación: {porcentaje_ocupacion:.1f}%\n"
+            
+            # Objetos en este cajón
+            objetos_cajon = cajon.objetos.all()
+            if objetos_cajon:
+                contexto += f"   - Objetos contenidos:\n"
+                for obj in objetos_cajon:
+                    contexto += f"     • {obj.nombre_objeto} (Tipo: {obj.tipo_objeto.nombre}, Tamaño: {obj.get_tamanio_display()})\n"
+            else:
+                contexto += f"   - Objetos contenidos: VACÍO\n"
+            contexto += "\n"
         
-        # Información de tipos de objetos
-        contexto += "\nTIPOS DE OBJETOS:\n"
+        contexto += "=== TIPOS DE OBJETOS ===\n"
         for tipo in tipos:
-            contexto += f"- {tipo.nombre}: {tipo.descripcion or 'Sin descripción'}\n"
+            objetos_tipo = tipo.objetos.all()
+            contexto += f"{tipo.nombre}: {tipo.descripcion or 'Sin descripción'}\n"
+            contexto += f"   - Cantidad total: {objetos_tipo.count()} objetos\n"
+            if objetos_tipo:
+                contexto += f"   - Ejemplos: {', '.join([obj.nombre_objeto for obj in objetos_tipo[:3]])}\n"
+            contexto += "\n"
         
-        # Información de objetos actuales
-        contexto += "\nOBJETOS ACTUALES:\n"
-        for objeto in objetos:
-            contexto += f"- {objeto.nombre_objeto} (tipo: {objeto.tipo_objeto.nombre}, tamaño: {objeto.get_tamanio_display()}) en cajón: {objeto.cajon.nombre}\n"
+        # Estadísticas generales
+        contexto += "=== ESTADÍSTICAS GENERALES ===\n"
+        contexto += f"Total de cajones: {cajones.count()}\n"
+        contexto += f"Total de objetos: {objetos.count()}\n"
+        contexto += f"Total de tipos: {tipos.count()}\n"
+        
+        # Distribución por tamaños
+        tamanios_stats = {}
+        for tamanio_choice in CajonObjeto.CajonTamanio.choices:
+            count = objetos.filter(tamanio=tamanio_choice[0]).count()
+            tamanios_stats[tamanio_choice[1]] = count
+        
+        contexto += f"Distribución por tamaños:\n"
+        for tamanio, count in tamanios_stats.items():
+            contexto += f"   - {tamanio}: {count} objetos\n"
+        
+        contexto += "\n"
         
         return contexto
     
-    def generar_recomendacion_organizacion(self, tipo_ordenamiento='tipo'):
+    def generar_recomendaciones_organizacion(self, tipo_ordenamiento='tipo'):
         """
-        Generar recomendación de organización usando Gemini AI
+        Generar 3 recomendaciones específicas de organización usando Gemini AI
         tipo_ordenamiento: 'tipo', 'tamanio', 'mixto'
         """
         try:
-            contexto = self.generar_contexto_base_datos()
+            contexto = self.generar_contexto_completo()
             
             prompt = f"""
 {contexto}
 
 INSTRUCCIONES:
-Analiza la información de los cajones y objetos. Genera una recomendación de organización basada en el tipo de ordenamiento: {tipo_ordenamiento}.
+Analiza el contexto completo del sistema de cajones y genera EXACTAMENTE 3 recomendaciones específicas de organización basadas en el criterio: {tipo_ordenamiento}.
 
-REGLAS:
-1. La respuesta debe ser de máximo 30 palabras
-2. Sugiere movimientos específicos de objetos entre cajones
+REGLAS IMPORTANTES:
+1. Genera EXACTAMENTE 3 recomendaciones
+2. Cada recomendación debe ser específica y accionable
 3. Considera la capacidad disponible de cada cajón
-4. Agrupa objetos por tipo o tamaño según el criterio
-5. Mantén un patrón lógico de organización
+4. Basa las recomendaciones en el criterio especificado ({tipo_ordenamiento})
+5. Usa el contexto real de los cajones y objetos existentes
+6. Las recomendaciones deben ser prácticas y realizables
 
-RESPONDE SOLO LA RECOMENDACIÓN EN 30 PALABRAS O MENOS:
-"""
-            
-            response = self.model.generate_content(prompt)
-            return response.text.strip()
-            
-        except Exception as e:
-            return f"Error al generar recomendación: {str(e)}"
-    
-    def generar_recomendacion_especifica(self, cajon_id=None, objeto_id=None):
-        """
-        Generar recomendación específica para un cajón u objeto
-        """
-        try:
-            contexto = self.generar_contexto_base_datos()
-            
-            if cajon_id:
-                cajon = Cajon.objects.get(id=cajon_id)
-                prompt = f"""
-{contexto}
-
-INSTRUCCIONES:
-Analiza el cajón "{cajon.nombre}" y sus objetos. Genera una recomendación específica para mejorar su organización.
-
-REGLAS:
-1. La respuesta debe ser de máximo 30 palabras
-2. Sugiere movimientos específicos de objetos
-3. Considera la capacidad disponible
-4. Mantén un patrón lógico
-
-RESPONDE SOLO LA RECOMENDACIÓN EN 30 PALABRAS O MENOS:
-"""
-            elif objeto_id:
-                objeto = CajonObjeto.objects.get(id=objeto_id)
-                prompt = f"""
-{contexto}
-
-INSTRUCCIONES:
-Analiza el objeto "{objeto.nombre_objeto}" (tipo: {objeto.tipo_objeto.nombre}, tamaño: {objeto.get_tamanio_display()}) actualmente en el cajón "{objeto.cajon.nombre}". Sugiere el mejor cajón para este objeto.
-
-REGLAS:
-1. La respuesta debe ser de máximo 30 palabras
-2. Sugiere el cajón más apropiado
-3. Justifica brevemente la recomendación
-
-RESPONDE SOLO LA RECOMENDACIÓN EN 30 PALABRAS O MENOS:
-"""
-            else:
-                return "Error: Se requiere especificar cajon_id u objeto_id"
-            
-            response = self.model.generate_content(prompt)
-            return response.text.strip()
-            
-        except Exception as e:
-            return f"Error al generar recomendación: {str(e)}"
-    
-    def obtener_movimientos_sugeridos(self, tipo_ordenamiento='tipo'):
-        """
-        Obtener movimientos específicos sugeridos por Gemini
-        """
-        try:
-            contexto = self.generar_contexto_base_datos()
-            
-            prompt = f"""
-{contexto}
-
-INSTRUCCIONES:
-Analiza la información y sugiere movimientos específicos de objetos entre cajones para mejorar la organización basada en: {tipo_ordenamiento}.
+CRITERIOS DE ORGANIZACIÓN:
+- 'tipo': Agrupa objetos por su tipo/categoría
+- 'tamanio': Agrupa objetos por tamaño (Pequeño, Mediano, Grande)
+- 'mixto': Combina criterios de tipo y tamaño para optimizar espacio
 
 FORMATO DE RESPUESTA:
-- Mover [nombre_objeto] de [cajon_origen] a [cajon_destino] (razón)
-- Mover [nombre_objeto] de [cajon_origen] a [cajon_destino] (razón)
+Genera exactamente 3 recomendaciones numeradas (1, 2, 3) en texto plano, cada una en una línea separada.
 
-REGLAS:
-1. Solo sugiere movimientos que mejoren la organización
-2. Considera la capacidad disponible
-3. Agrupa objetos similares
-4. Máximo 5 movimientos sugeridos
+EJEMPLO:
+1. Mover todos los libros del cajón "Oficina" al cajón "Biblioteca" para agrupar por tipo
+2. Reorganizar herramientas pequeñas en el cajón "Herramientas" para optimizar espacio
+3. Crear un cajón específico para dispositivos electrónicos grandes
 
-RESPONDE SOLO LOS MOVIMIENTOS SUGERIDOS:
+RESPONDE SOLO LAS 3 RECOMENDACIONES NUMERADAS:
 """
             
             response = self.model.generate_content(prompt)
-            return response.text.strip()
+            recomendaciones_texto = response.text.strip()
+            
+            # Procesar las recomendaciones para asegurar formato correcto
+            recomendaciones = []
+            for linea in recomendaciones_texto.split('\n'):
+                linea = linea.strip()
+                if linea and (linea.startswith('1.') or linea.startswith('2.') or linea.startswith('3.')):
+                    # Extraer solo el texto de la recomendación
+                    recomendacion = linea.split('.', 1)[1].strip() if '.' in linea else linea
+                    recomendaciones.append(recomendacion)
+            
+            # Asegurar que tengamos exactamente 3 recomendaciones
+            while len(recomendaciones) < 3:
+                recomendaciones.append("No hay suficientes datos para generar esta recomendación")
+            
+            return recomendaciones[:3]  # Solo las primeras 3
             
         except Exception as e:
-            return f"Error al generar movimientos: {str(e)}" 
+            return [
+                f"Error al generar recomendación 1: {str(e)}",
+                "Error al generar recomendación 2",
+                "Error al generar recomendación 3"
+            ] 
