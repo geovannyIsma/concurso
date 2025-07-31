@@ -124,6 +124,9 @@ REST_FRAMEWORK = {
     ],
 }
 
+# Deshabilitar APPEND_SLASH para evitar problemas con POST
+APPEND_SLASH = False
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
