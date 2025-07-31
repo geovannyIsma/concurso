@@ -5,7 +5,12 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from .models import Cajon, CajonObjeto, TipoObjeto, CajonHistorial
 from .serializers import CajonSerializer, CajonHistorialSerializer, TipoObjetoSerializer, CajonObjetoSerializer
+<<<<<<< Updated upstream
 from .services import RecomendacionService
+=======
+from .models import Cajon, CajonHistorial, TipoObjeto, CajonObjeto
+from rest_framework import status
+>>>>>>> Stashed changes
 
 # Create your views here.
 
