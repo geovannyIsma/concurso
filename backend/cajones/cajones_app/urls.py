@@ -4,7 +4,7 @@ from .views import (
     CajonListView, CajonDetailView, CajonHistorialListView, CajonHistorialDetailView,
     TipoObjetoListView, TipoObjetoDetailView, CajonObjetoListView, CajonObjetoDetailView,
     CajonObjetosView, CajonHistorialView, CajonCapacidadView, RecomendacionSimpleView,
-    OrdenamientoView
+    CajonObjetosOrdenadosView
 )
 
 urlpatterns = [
@@ -12,6 +12,7 @@ urlpatterns = [
     path('api/cajones/', CajonListView.as_view(), name='cajones-list'),
     path('api/cajones/<int:pk>/', CajonDetailView.as_view(), name='cajon-detail'),
     path('api/cajones/<int:cajon_id>/objetos/', CajonObjetosView.as_view(), name='cajon-objetos'),
+    path('api/cajones/<int:cajon_id>/objetos-ordenados/', CajonObjetosOrdenadosView.as_view(), name='cajon-objetos-ordenados'),
     path('api/cajones/<int:cajon_id>/historial/', CajonHistorialView.as_view(), name='cajon-historial'),
     path('api/cajones/<int:cajon_id>/capacidad/', CajonCapacidadView.as_view(), name='cajon-capacidad'),
     
@@ -26,9 +27,6 @@ urlpatterns = [
     # Rutas de Objetos
     path('api/objetos/', CajonObjetoListView.as_view(), name='objetos-list'),
     path('api/objetos/<int:pk>/', CajonObjetoDetailView.as_view(), name='objeto-detail'),
-    
-    # Ruta de Ordenamiento
-    path('api/ordenamiento/', OrdenamientoView.as_view(), name='ordenamiento'),
     
     # Ruta de Recomendación
     path('api/recomendacion/', RecomendacionSimpleView.as_view(), name='recomendacion-simple'),

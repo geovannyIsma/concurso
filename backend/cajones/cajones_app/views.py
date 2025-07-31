@@ -285,3 +285,50 @@ class RecomendacionSimpleView(APIView):
                 ],
                 'tipo_ordenamiento': tipo_ordenamiento
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class CajonObjetosOrdenadosView(APIView):
+    """Vista para obtener objetos de un cajón ordenados según criterio"""
+    
+    def get(self, request, cajon_id):
+        try:
+            cajon = get_object_or_404(Cajon, pk=cajon_id)
+            tipo_ordenamiento = request.query_params.get('ordenamiento', 'creacion')
+            
+            # Obtener objetos del cajón
+            objetos = cajon.objetos.all()
+            
+            # Aplicar ordenamiento según el criterio
+            if tipo_ordenamiento == 'tipo':
+                # Ordenar por tipo alfabéticamente
+                objetos = objetos.order_by('tipo_objeto__nombre')
+            elif tipo_ordenamiento == 'tamanio':
+                # Ordenar por tamaño: Pequeño -> Mediano -> Grande
+                from django.db.models import Case, When, Value, IntegerField
+                objetos = objetos.annotate(
+                    tamanio_order=Case(
+                        When(tamanio='PE', then=Value(1)),
+                        When(tamanio='ME', then=Value(2)),
+                        When(tamanio='GR', then=Value(3)),
+                        default=Value(4),
+                        output_field=IntegerField(),
+                    )
+                ).order_by('tamanio_order')
+            else:
+                # Ordenamiento por creación (por defecto)
+                objetos = objetos.order_by('id')
+            
+            serializer = CajonObjetoSerializer(objetos, many=True)
+            
+            return Response({
+                'cajon_id': cajon.id,
+                'cajon_nombre': cajon.nombre,
+                'tipo_ordenamiento': tipo_ordenamiento,
+                'objetos': serializer.data,
+                'total_objetos': objetos.count()
+            })
+            
+        except Exception as e:
+            return Response({
+                'error': f'Error al obtener objetos ordenados: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
