@@ -30,6 +30,9 @@ const Breadcrumbs: React.FC = () => {
         case 'recomendaciones':
           name = 'Recomendaciones';
           break;
+        case 'cajon':
+          name = 'Detalle del Cajón';
+          break;
         default:
           name = segment.charAt(0).toUpperCase() + segment.slice(1);
       }
