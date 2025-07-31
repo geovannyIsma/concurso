@@ -19,8 +19,8 @@ const CajonDetalle: React.FC = () => {
   const [tipoOrdenamiento, setTipoOrdenamiento] = useState('tipo');
 
   const tiposOrdenamiento = [
-    { value: 'tipo', label: 'Por Tipo de Objeto', description: 'Agrupa objetos por categorías' },
-    { value: 'tamanio', label: 'Por Tamaño', description: 'Organiza por tamaño de objetos' }
+    { value: 'tamanio', label: 'Por Tipo de Objeto', description: 'Organiza por tamaño de objetos' },
+    { value: 'tipo', label: 'Por tamañio', description: 'Agrupa objetos por categorías' }
   ];
 
   useEffect(() => {
