@@ -3,7 +3,8 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     CajonListView, CajonDetailView, CajonHistorialListView, CajonHistorialDetailView,
     TipoObjetoListView, TipoObjetoDetailView, CajonObjetoListView, CajonObjetoDetailView,
-    CajonObjetosView, CajonHistorialView, CajonCapacidadView, RecomendacionSimpleView
+    CajonObjetosView, CajonHistorialView, CajonCapacidadView, RecomendacionSimpleView,
+    OrdenamientoView
 )
 
 urlpatterns = [
@@ -25,6 +26,9 @@ urlpatterns = [
     # Rutas de Objetos
     path('api/objetos/', CajonObjetoListView.as_view(), name='objetos-list'),
     path('api/objetos/<int:pk>/', CajonObjetoDetailView.as_view(), name='objeto-detail'),
+    
+    # Ruta de Ordenamiento
+    path('api/ordenamiento/', OrdenamientoView.as_view(), name='ordenamiento'),
     
     # Ruta de Recomendación
     path('api/recomendacion/', RecomendacionSimpleView.as_view(), name='recomendacion-simple'),

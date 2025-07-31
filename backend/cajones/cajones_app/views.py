@@ -5,7 +5,7 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from .models import Cajon, CajonObjeto, TipoObjeto, CajonHistorial
 from .serializers import CajonSerializer, CajonHistorialSerializer, TipoObjetoSerializer, CajonObjetoSerializer
-from .services import RecomendacionService
+from .services import RecomendacionService, OrdenamientoService
 from .models import Cajon, CajonHistorial, TipoObjeto, CajonObjeto
 from rest_framework import status
 
@@ -227,26 +227,61 @@ class CajonCapacidadView(APIView):
         })
 
 
+class OrdenamientoView(APIView):
+    """Vista para obtener objetos ordenados por diferentes criterios"""
+    def get(self, request):
+        try:
+            tipo_ordenamiento = request.query_params.get('tipo_ordenamiento', 'tipo')
+            cajon_id = request.query_params.get('cajon_id')
+            if cajon_id:
+                cajon_id = int(cajon_id)
+            ordenamiento_service = OrdenamientoService()
+            if tipo_ordenamiento == 'tipo':
+                resultado = ordenamiento_service.ordenar_por_tipo(cajon_id)
+            elif tipo_ordenamiento == 'tamanio':
+                resultado = ordenamiento_service.ordenar_por_tamanio(cajon_id)
+            elif tipo_ordenamiento == 'mixto':
+                resultado = ordenamiento_service.ordenar_mixto(cajon_id)
+            else:
+                return Response({
+                    'error': 'Tipo de ordenamiento no válido. Use: tipo, tamanio, mixto'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            # Serializar el resultado
+            if resultado and isinstance(resultado, list) and isinstance(resultado[0], dict) and 'objetos' in resultado[0]:
+                for grupo in resultado:
+                    grupo['objetos'] = CajonObjetoSerializer(grupo['objetos'], many=True).data
+            else:
+                resultado = CajonObjetoSerializer(resultado, many=True).data
+
+            return Response({
+                'tipo_ordenamiento': tipo_ordenamiento,
+                'cajon_id': cajon_id,
+                'resultado': resultado
+            })
+        except Exception as e:
+            return Response({
+                'error': f'Error al ordenar objetos: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 class RecomendacionSimpleView(APIView):    
     def get(self, request):
         try:
             tipo_ordenamiento = request.query_params.get('tipo_ordenamiento', 'tipo')
             recomendacion_service = RecomendacionService()
             recomendaciones = recomendacion_service.generar_recomendaciones_organizacion(tipo_ordenamiento)
-            
             return Response({
                 'recomendaciones': recomendaciones,
-                'tipo_ordenamiento': tipo_ordenamiento,
-                'cantidad': len(recomendaciones)
+                'tipo_ordenamiento': tipo_ordenamiento
             })
         except Exception as e:
             return Response({
-                'error': f'Error al generar recomendaciones: {str(e)}',
+                'error': f'Error al generar recomendación: {str(e)}',
                 'recomendaciones': [
                     "Error al generar recomendación 1",
                     "Error al generar recomendación 2", 
                     "Error al generar recomendación 3"
                 ],
-                'tipo_ordenamiento': tipo_ordenamiento,
-                'cantidad': 3
+                'tipo_ordenamiento': tipo_ordenamiento
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

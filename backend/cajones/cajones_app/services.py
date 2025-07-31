@@ -142,6 +142,108 @@ class CajonService:
         }
 
 
+class OrdenamientoService:
+    """
+    Servicio para manejar la lógica de ordenamiento de objetos en cajones
+    """
+    
+    @staticmethod
+    def ordenar_por_tipo(cajon_id=None):
+        """
+        Ordenar objetos por tipo de objeto
+        Si se especifica cajon_id, ordena solo los objetos de ese cajón
+        """
+        if cajon_id:
+            objetos = CajonObjeto.objects.filter(cajon_id=cajon_id).select_related('tipo_objeto', 'cajon')
+        else:
+            objetos = CajonObjeto.objects.all().select_related('tipo_objeto', 'cajon')
+        
+        # Agrupar por tipo de objeto
+        objetos_por_tipo = {}
+        for objeto in objetos:
+            tipo_nombre = objeto.tipo_objeto.nombre
+            if tipo_nombre not in objetos_por_tipo:
+                objetos_por_tipo[tipo_nombre] = []
+            objetos_por_tipo[tipo_nombre].append(objeto)
+        
+        # Crear resultado ordenado
+        resultado = []
+        for tipo_nombre, objetos_list in sorted(objetos_por_tipo.items()):
+            resultado.append({
+                'tipo': tipo_nombre,
+                'cantidad': len(objetos_list),
+                'objetos': objetos_list
+            })
+        
+        return resultado
+    
+    @staticmethod
+    def ordenar_por_tamanio(cajon_id=None):
+        """
+        Ordenar objetos por tamaño
+        Si se especifica cajon_id, ordena solo los objetos de ese cajón
+        """
+        if cajon_id:
+            objetos = CajonObjeto.objects.filter(cajon_id=cajon_id).select_related('tipo_objeto', 'cajon')
+        else:
+            objetos = CajonObjeto.objects.all().select_related('tipo_objeto', 'cajon')
+        
+        # Agrupar por tamaño
+        objetos_por_tamanio = {}
+        for objeto in objetos:
+            tamanio_display = objeto.get_tamanio_display()
+            if tamanio_display not in objetos_por_tamanio:
+                objetos_por_tamanio[tamanio_display] = []
+            objetos_por_tamanio[tamanio_display].append(objeto)
+        
+        # Ordenar por tamaño (Pequeño, Mediano, Grande)
+        orden_tamanios = ['Pequeño', 'Mediano', 'Grande']
+        resultado = []
+        for tamanio in orden_tamanios:
+            if tamanio in objetos_por_tamanio:
+                resultado.append({
+                    'tamanio': tamanio,
+                    'cantidad': len(objetos_por_tamanio[tamanio]),
+                    'objetos': objetos_por_tamanio[tamanio]
+                })
+        
+        return resultado
+    
+    @staticmethod
+    def ordenar_mixto(cajon_id=None):
+        """
+        Ordenar objetos combinando tipo y tamaño para optimizar espacio
+        Si se especifica cajon_id, ordena solo los objetos de ese cajón
+        """
+        if cajon_id:
+            objetos = CajonObjeto.objects.filter(cajon_id=cajon_id).select_related('tipo_objeto', 'cajon')
+        else:
+            objetos = CajonObjeto.objects.all().select_related('tipo_objeto', 'cajon')
+        
+        # Agrupar por tipo y tamaño
+        objetos_por_tipo_tamanio = {}
+        for objeto in objetos:
+            tipo_nombre = objeto.tipo_objeto.nombre
+            tamanio_display = objeto.get_tamanio_display()
+            clave = f"{tipo_nombre}_{tamanio_display}"
+            
+            if clave not in objetos_por_tipo_tamanio:
+                objetos_por_tipo_tamanio[clave] = {
+                    'tipo': tipo_nombre,
+                    'tamanio': tamanio_display,
+                    'objetos': []
+                }
+            objetos_por_tipo_tamanio[clave]['objetos'].append(objeto)
+        
+        # Crear resultado ordenado
+        resultado = []
+        for clave, datos in sorted(objetos_por_tipo_tamanio.items()):
+            datos['cantidad'] = len(datos['objetos'])
+            resultado.append(datos)
+        
+        return resultado
+
+
 class RecomendacionService:
     def __init__(self):
         # Configurar Gemini AI

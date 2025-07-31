@@ -42,7 +42,8 @@ export interface CapacidadCajon {
 }
 
 export interface Recomendacion {
-  mensaje: string;
+  recomendaciones: string[];
+  tipo_ordenamiento: string;
 }
 
 // Clase principal de la API
@@ -201,6 +202,18 @@ class ApiService {
   // Obtener historial de un cajón específico
   async getHistorialCajon(cajonId: number): Promise<CajonHistorial[]> {
     return this.request<CajonHistorial[]>(`/api/cajones/${cajonId}/historial/`);
+  }
+
+  // ===== ORDENAMIENTO =====
+
+  // Obtener objetos ordenados
+  async getOrdenamiento(tipoOrdenamiento: string = 'tipo', cajonId?: number): Promise<any> {
+    const params = new URLSearchParams();
+    params.append('tipo_ordenamiento', tipoOrdenamiento);
+    if (cajonId) {
+      params.append('cajon_id', cajonId.toString());
+    }
+    return this.request<any>(`/api/ordenamiento/?${params.toString()}`);
   }
 
   // ===== RECOMENDACIONES =====

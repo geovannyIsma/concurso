@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import LayoutHome from '../layout/layout_home';
 import ObjetoForm from '../components/ObjetoForm';
+import ObjetosOrdenados from '../components/ObjetosOrdenados';
 import { apiService } from '../services/api';
 import type { Cajon, TipoObjeto, CajonObjeto, Recomendacion } from '../services/api';
 
@@ -11,9 +12,11 @@ const CajonDetalle: React.FC = () => {
   const [cajon, setCajon] = useState<Cajon | null>(null);
   const [tiposObjeto, setTiposObjeto] = useState<TipoObjeto[]>([]);
   const [recomendacion, setRecomendacion] = useState<string>('');
+  const [objetosOrdenados, setObjetosOrdenados] = useState<any[]>([]);
   const [showObjetoForm, setShowObjetoForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [formLoading, setFormLoading] = useState(false);
+  const [ordenamientoLoading, setOrdenamientoLoading] = useState(false);
   const [tipoOrdenamiento, setTipoOrdenamiento] = useState('tipo');
 
   const tiposOrdenamiento = [
@@ -46,12 +49,28 @@ const CajonDetalle: React.FC = () => {
       
       setCajon(cajonCompleto);
       setTiposObjeto(tiposData);
-      setRecomendacion(recomendacionData.mensaje);
+      setRecomendacion(recomendacionData.recomendaciones?.[0] || '');
+      
+      // Cargar ordenamiento inicial
+      await cargarOrdenamiento();
     } catch (err) {
       console.error('Error cargando datos:', err);
       alert('Error al cargar los datos del cajón.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const cargarOrdenamiento = async () => {
+    try {
+      setOrdenamientoLoading(true);
+      const data = await apiService.getOrdenamiento(tipoOrdenamiento, parseInt(id!));
+      setObjetosOrdenados(data.resultado);
+    } catch (err) {
+      console.error('Error cargando ordenamiento:', err);
+      setObjetosOrdenados([]);
+    } finally {
+      setOrdenamientoLoading(false);
     }
   };
 
@@ -91,11 +110,16 @@ const CajonDetalle: React.FC = () => {
   const generarNuevaRecomendacion = async () => {
     try {
       const data = await apiService.getRecomendacion(tipoOrdenamiento);
-      setRecomendacion(data.mensaje);
+      setRecomendacion(data.recomendaciones?.[0] || '');
     } catch (err) {
       console.error('Error generando recomendación:', err);
       alert('Error al generar la recomendación.');
     }
+  };
+
+  const cambiarOrdenamiento = async (nuevoTipo: string) => {
+    setTipoOrdenamiento(nuevoTipo);
+    await cargarOrdenamiento();
   };
 
   const getTamanioLabel = (tamanio: string) => {
@@ -179,9 +203,9 @@ const CajonDetalle: React.FC = () => {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Columna izquierda - Detalles del cajón */}
-          <div className="space-y-6">
+          <div className="lg:col-span-1 space-y-6">
             {/* Estadísticas */}
             <div className="bg-white rounded-lg border border-gray-200 p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Estadísticas del Cajón</h3>
@@ -251,12 +275,12 @@ const CajonDetalle: React.FC = () => {
             </div>
           </div>
 
-          {/* Columna derecha - Recomendaciones */}
-          <div className="space-y-6">
+          {/* Columna central - Ordenamiento */}
+          <div className="lg:col-span-1 space-y-6">
             {/* Selector de tipo de ordenamiento */}
             <div className="bg-white rounded-lg border border-gray-200 p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Tipo de Organización
+                Tipo de Ordenamiento
               </h3>
               
               <div className="space-y-3">
@@ -268,7 +292,7 @@ const CajonDetalle: React.FC = () => {
                         ? 'border-primary bg-primary-50'
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
-                    onClick={() => setTipoOrdenamiento(tipo.value)}
+                    onClick={() => cambiarOrdenamiento(tipo.value)}
                   >
                     <div className="flex items-center space-x-3">
                       <div className={`w-4 h-4 rounded-full border-2 ${
@@ -286,13 +310,25 @@ const CajonDetalle: React.FC = () => {
               </div>
             </div>
 
+            {/* Objetos Ordenados */}
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <ObjetosOrdenados
+                tipoOrdenamiento={tipoOrdenamiento}
+                resultado={objetosOrdenados}
+                loading={ordenamientoLoading}
+              />
+            </div>
+          </div>
+
+          {/* Columna derecha - Recomendaciones */}
+          <div className="lg:col-span-1 space-y-6">
             {/* Recomendación */}
             <div className="bg-white rounded-lg border border-gray-200 p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
                   <div className="text-2xl">💡</div>
                   <h3 className="text-lg font-semibold text-gray-900">
-                    Recomendación de Organización
+                    Recomendación IA
                   </h3>
                 </div>
                 <button
