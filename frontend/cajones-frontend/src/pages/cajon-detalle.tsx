@@ -21,8 +21,7 @@ const CajonDetalle: React.FC = () => {
 
   const tiposOrdenamiento = [
     { value: 'tipo', label: 'Por Tipo de Objeto', description: 'Agrupa objetos por categorías' },
-    { value: 'tamanio', label: 'Por Tamaño', description: 'Organiza por tamaño de objetos' },
-    { value: 'mixto', label: 'Mixto', description: 'Combina tipo y tamaño' }
+    { value: 'tamanio', label: 'Por Tamaño', description: 'Organiza por tamaño de objetos' }
   ];
 
   useEffect(() => {
@@ -408,4 +407,4 @@ const CajonDetalle: React.FC = () => {
   );
 };
 
-export default CajonDetalle; 
+export default CajonDetalle;

@@ -34,7 +34,6 @@ const ObjetosOrdenados: React.FC<ObjetosOrdenadosProps> = ({
     switch (tipo) {
       case 'tipo': return 'Por Tipo de Objeto';
       case 'tamanio': return 'Por Tamaño';
-      case 'mixto': return 'Mixto (Tipo + Tamaño)';
       default: return tipo;
     }
   };
@@ -51,87 +50,49 @@ const ObjetosOrdenados: React.FC<ObjetosOrdenadosProps> = ({
     );
   }
 
-  if (!resultado || resultado.length === 0) {
+  // Aplanar la lista si viene agrupada
+  let objetos: any[] = [];
+  if (resultado.length > 0 && resultado[0].objetos) {
+    objetos = resultado.flatMap((grupo: any) => grupo.objetos);
+  } else {
+    objetos = resultado;
+  }
+
+  if (!objetos.length) {
     return (
       <div className="text-center py-8">
         <div className="text-4xl mb-4">📦</div>
         <h3 className="text-lg font-medium text-gray-900 mb-2">No hay objetos</h3>
-        <p className="text-gray-500">No se encontraron objetos para mostrar con este ordenamiento.</p>
+        <p className="text-gray-500">No se encontraron objetos para mostrar.</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900">
-          Objetos Ordenados: {getTipoOrdenamientoLabel(tipoOrdenamiento)}
-        </h3>
-        <span className="text-sm text-gray-500">
-          {resultado.length} {tipoOrdenamiento === 'tipo' ? 'tipos' : tipoOrdenamiento === 'tamanio' ? 'tamaños' : 'grupos'}
-        </span>
-      </div>
-
-      <div className="space-y-4">
-        {resultado.map((grupo, index) => (
-          <div key={index} className="bg-white rounded-lg border border-gray-200 p-4">
-            {/* Header del grupo */}
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center space-x-3">
-                <div className="text-2xl">
-                  {tipoOrdenamiento === 'tipo' ? '🏷️' : tipoOrdenamiento === 'tamanio' ? '📏' : '🔀'}
-                </div>
-                <div>
-                  <h4 className="font-medium text-gray-900">
-                    {tipoOrdenamiento === 'tipo' && grupo.tipo}
-                    {tipoOrdenamiento === 'tamanio' && grupo.tamanio}
-                    {tipoOrdenamiento === 'mixto' && `${grupo.tipo} - ${grupo.tamanio}`}
-                  </h4>
-                  <p className="text-sm text-gray-600">
-                    {grupo.cantidad} objeto{grupo.cantidad !== 1 ? 's' : ''}
-                  </p>
-                </div>
-              </div>
-              <div className="bg-primary-50 text-primary px-3 py-1 rounded-full text-sm font-medium">
-                {grupo.cantidad}
-              </div>
-            </div>
-
-            {/* Lista de objetos */}
-            <div className="space-y-2">
-              {grupo.objetos.map((objeto: CajonObjeto) => (
-                <div key={objeto.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
-                  <div className="flex items-center space-x-3">
-                    <span className="text-lg">📦</span>
-                    <div>
-                      <p className="font-medium text-gray-900">{objeto.nombre_objeto}</p>
-                      <p className="text-sm text-gray-600">
-                        {tipoOrdenamiento === 'tipo' && `Tamaño: ${getTamanioLabel(objeto.tamanio)}`}
-                        {tipoOrdenamiento === 'tamanio' && `Tipo: ${objeto.tipo_objeto.nombre}`}
-                        {tipoOrdenamiento === 'mixto' && `Cajón: ${objeto.cajon}`}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    {tipoOrdenamiento !== 'tamanio' && (
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getTamanioColor(objeto.tamanio)}`}>
-                        {getTamanioLabel(objeto.tamanio)}
-                      </span>
-                    )}
-                    {tipoOrdenamiento !== 'tipo' && (
-                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {objeto.tipo_objeto.nombre}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ))}
+    <div className="space-y-3">
+      {objetos.map((objeto, idx) => (
+        <div
+          key={objeto.id || idx}
+          className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
+        >
+          <div className="flex items-center space-x-3">
+            <span className="text-lg">📦</span>
+            <div>
+              <p className="font-medium text-gray-900">{objeto.nombre_objeto}</p>
+              <p className="text-sm text-gray-600">
+                {objeto.tipo_objeto?.nombre || objeto.tipo || ''}
+                {objeto.tamanio && (
+                  <span className="ml-2 text-xs text-gray-500">
+                    ({objeto.tamanio || objeto.tamanio_display})
+                  </span>
+                )}
+              </p>
             </div>
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
     </div>
   );
 };
 
-export default ObjetosOrdenados; 
+export default ObjetosOrdenados;

@@ -12,8 +12,7 @@ const Recomendaciones: React.FC = () => {
 
   const tiposOrdenamiento = [
     { value: 'tipo', label: 'Por Tipo de Objeto', description: 'Agrupa objetos por categorías', icon: '🏷️' },
-    { value: 'tamanio', label: 'Por Tamaño', description: 'Organiza por tamaño de objetos', icon: '📏' },
-    { value: 'mixto', label: 'Mixto', description: 'Combina tipo y tamaño', icon: '🔀' }
+    { value: 'tamanio', label: 'Por Tamaño', description: 'Organiza por tamaño de objetos', icon: '📏' }
   ];
 
   const cargarOrdenamiento = async (nuevoTipo?: string) => {
