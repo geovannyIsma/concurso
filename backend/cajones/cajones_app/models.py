@@ -5,7 +5,7 @@ from django.db import models
 class Cajon(models.Model):
     nombre = models.CharField(max_length=100)
     capacidad_maxima = models.IntegerField()
-    historial = models.ManyToManyField('CajonHistorial', blank=True, related_name='cajones')
+    
     def __str__(self):
         return self.nombre + f" (Capacidad: {self.capacidad_maxima})"
     

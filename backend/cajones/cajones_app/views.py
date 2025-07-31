@@ -232,11 +232,21 @@ class RecomendacionSimpleView(APIView):
         try:
             tipo_ordenamiento = request.query_params.get('tipo_ordenamiento', 'tipo')
             recomendacion_service = RecomendacionService()
-            recomendacion = recomendacion_service.generar_recomendacion_organizacion(tipo_ordenamiento)
+            recomendaciones = recomendacion_service.generar_recomendaciones_organizacion(tipo_ordenamiento)
+            
             return Response({
-                'mensaje': recomendacion
+                'recomendaciones': recomendaciones,
+                'tipo_ordenamiento': tipo_ordenamiento,
+                'cantidad': len(recomendaciones)
             })
         except Exception as e:
             return Response({
-                'mensaje': f'Error al generar recomendación: {str(e)}'
+                'error': f'Error al generar recomendaciones: {str(e)}',
+                'recomendaciones': [
+                    "Error al generar recomendación 1",
+                    "Error al generar recomendación 2", 
+                    "Error al generar recomendación 3"
+                ],
+                'tipo_ordenamiento': tipo_ordenamiento,
+                'cantidad': 3
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
