@@ -1,12 +1,17 @@
 import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import Breadcrumbs from '../components/Breadcrumbs';
+import MobileNav from '../components/MobileNav';
 
 interface LayoutHomeProps {
   children: React.ReactNode;
 }
 
 const LayoutHome: React.FC<LayoutHomeProps> = ({ children }) => {
+  const location = useLocation();
+
   const isActive = (path: string) => {
-    return window.location.pathname === path;
+    return location.pathname === path;
   };
 
   return (
@@ -17,9 +22,9 @@ const LayoutHome: React.FC<LayoutHomeProps> = ({ children }) => {
           <div className="flex justify-between items-center h-16">
                           <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <h1 className="text-2xl font-bold text-white">
+                  <Link to="/" className="text-2xl font-bold text-white hover:text-gray-100 transition-colors duration-200">
                     📦 Gestión de Cajones
-                  </h1>
+                  </Link>
                 </div>
               </div>
           </div>
@@ -36,8 +41,8 @@ const LayoutHome: React.FC<LayoutHomeProps> = ({ children }) => {
                 Navegación
               </h3>
               <div className="mt-4 space-y-2">
-                <a 
-                  href="/" 
+                <Link 
+                  to="/" 
                   className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
                     isActive('/') 
                       ? 'text-primary bg-primary-50' 
@@ -46,9 +51,9 @@ const LayoutHome: React.FC<LayoutHomeProps> = ({ children }) => {
                 >
                   <span className="mr-3">📦</span>
                   Cajones
-                </a>
-                <a 
-                  href="/historial" 
+                </Link>
+                <Link 
+                  to="/historial" 
                   className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
                     isActive('/historial') 
                       ? 'text-primary bg-primary-50' 
@@ -57,9 +62,9 @@ const LayoutHome: React.FC<LayoutHomeProps> = ({ children }) => {
                 >
                   <span className="mr-3">📋</span>
                   Historial
-                </a>
-                <a 
-                  href="/tipos-objeto" 
+                </Link>
+                <Link 
+                  to="/tipos-objeto" 
                   className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
                     isActive('/tipos-objeto') 
                       ? 'text-primary bg-primary-50' 
@@ -68,9 +73,9 @@ const LayoutHome: React.FC<LayoutHomeProps> = ({ children }) => {
                 >
                   <span className="mr-3">🏷️</span>
                   Tipos de Objetos
-                </a>
-                <a 
-                  href="/recomendaciones" 
+                </Link>
+                <Link 
+                  to="/recomendaciones" 
                   className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
                     isActive('/recomendaciones') 
                       ? 'text-primary bg-primary-50' 
@@ -79,7 +84,7 @@ const LayoutHome: React.FC<LayoutHomeProps> = ({ children }) => {
                 >
                   <span className="mr-3">🤖</span>
                   Recomendaciones
-                </a>
+                </Link>
               </div>
             </div>
           </nav>
@@ -87,9 +92,13 @@ const LayoutHome: React.FC<LayoutHomeProps> = ({ children }) => {
 
         {/* Main Content Area */}
         <main className="flex-1 p-8">
+          <Breadcrumbs />
           {children}
         </main>
       </div>
+      
+      {/* Navegación móvil */}
+      <MobileNav />
     </div>
   );
 };
