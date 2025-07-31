@@ -31,12 +31,20 @@ const CajonDetalle: React.FC = () => {
   const cargarDatos = async () => {
     try {
       setLoading(true);
-      const [cajonData, tiposData, recomendacionData] = await Promise.all([
-        apiService.getCajon(parseInt(id!)),
+      const [cajonData, objetosData, tiposData, recomendacionData] = await Promise.all([
+        apiService.getCajonBasico(parseInt(id!)),
+        apiService.getObjetosCajon(parseInt(id!)),
         apiService.getTiposObjeto(),
         apiService.getRecomendacion(tipoOrdenamiento)
       ]);
-      setCajon(cajonData);
+      
+      // Combinar los datos del cajón con sus objetos
+      const cajonCompleto = {
+        ...cajonData,
+        objetos: objetosData
+      };
+      
+      setCajon(cajonCompleto);
       setTiposObjeto(tiposData);
       setRecomendacion(recomendacionData.mensaje);
     } catch (err) {
@@ -349,7 +357,7 @@ const CajonDetalle: React.FC = () => {
 
         {/* Modal para agregar objeto */}
         {showObjetoForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="fixed inset-0 bg-black bg-black/50 flex items-center justify-center z-50">
             <ObjetoForm
               cajonId={cajon.id}
               tiposObjeto={tiposObjeto}

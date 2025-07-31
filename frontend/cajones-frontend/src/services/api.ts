@@ -128,6 +128,11 @@ class ApiService {
     return this.request<CajonObjeto[]>(`/api/cajones/${cajonId}/objetos/`);
   }
 
+  // Obtener cajón sin objetos (para optimizar)
+  async getCajonBasico(id: number): Promise<Omit<Cajon, 'objetos'>> {
+    return this.request<Omit<Cajon, 'objetos'>>(`/api/cajones/${id}/`);
+  }
+
   // Crear un nuevo objeto
   async createObjeto(data: {
     cajon: number;

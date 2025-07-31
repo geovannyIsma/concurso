@@ -16,7 +16,7 @@ class TipoObjetoSerializer(serializers.ModelSerializer):
         model = TipoObjeto
         fields = '__all__'
 
-class CajonObjetoSerializer(serializers.ModelSerializer):
+class CajonObjetoSerializer(serializers.ModelSerializer):    
     class Meta:
         model = CajonObjeto
         fields = '__all__'

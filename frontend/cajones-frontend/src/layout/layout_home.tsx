@@ -74,17 +74,6 @@ const LayoutHome: React.FC<LayoutHomeProps> = ({ children }) => {
                   <span className="mr-3">🏷️</span>
                   Tipos de Objetos
                 </Link>
-                <Link 
-                  to="/recomendaciones" 
-                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
-                    isActive('/recomendaciones') 
-                      ? 'text-primary bg-primary-50' 
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                  }`}
-                >
-                  <span className="mr-3">🤖</span>
-                  Recomendaciones
-                </Link>
               </div>
             </div>
           </nav>
