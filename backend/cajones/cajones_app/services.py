@@ -2,7 +2,7 @@ import os
 import google.generativeai as genai
 from django.db import transaction
 from django.core.exceptions import ValidationError
-from .models import Cajon, CajonObjeto, CajonHistorial, CajonTamanio, TipoObjeto
+from .models import Cajon, CajonObjeto, CajonHistorial, TipoObjeto
 
 
 class CajonService:
@@ -117,7 +117,7 @@ class CajonService:
         
         # Estadísticas por tamaño
         tamanios = {}
-        for tamanio_choice in CajonTamanio.choices:
+        for tamanio_choice in CajonObjeto.choices:
             tamanios[tamanio_choice[1]] = objetos.filter(tamanio=tamanio_choice[0]).count()
         
         # Estadísticas por tipo
@@ -301,7 +301,7 @@ class RecomendacionService:
         
         # Distribución por tamaños
         tamanios_stats = {}
-        for tamanio_choice in CajonTamanio.choices:
+        for tamanio_choice in CajonObjeto.CajonTamanio.choices:
             count = objetos.filter(tamanio=tamanio_choice[0]).count()
             tamanios_stats[tamanio_choice[1]] = count
         
