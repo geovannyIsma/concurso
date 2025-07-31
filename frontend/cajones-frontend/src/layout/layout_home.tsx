@@ -5,19 +5,23 @@ interface LayoutHomeProps {
 }
 
 const LayoutHome: React.FC<LayoutHomeProps> = ({ children }) => {
+  const isActive = (path: string) => {
+    return window.location.pathname === path;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-primary shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <h1 className="text-2xl font-bold text-white">
-                  📦 Gestión de Cajones
-                </h1>
+                          <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <h1 className="text-2xl font-bold text-white">
+                    📦 Gestión de Cajones
+                  </h1>
+                </div>
               </div>
-            </div>
           </div>
         </div>
       </header>
@@ -32,21 +36,49 @@ const LayoutHome: React.FC<LayoutHomeProps> = ({ children }) => {
                 Navegación
               </h3>
               <div className="mt-4 space-y-2">
-                <a href="#" className="flex items-center px-3 py-2 text-sm font-medium text-primary rounded-md bg-primary-50">
+                <a 
+                  href="/" 
+                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
+                    isActive('/') 
+                      ? 'text-primary bg-primary-50' 
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  }`}
+                >
                   <span className="mr-3">📦</span>
                   Cajones
                 </a>
-                <a href="#" className="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900">
+                <a 
+                  href="/historial" 
+                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
+                    isActive('/historial') 
+                      ? 'text-primary bg-primary-50' 
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  }`}
+                >
                   <span className="mr-3">📋</span>
                   Historial
                 </a>
-                <a href="#" className="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900">
+                <a 
+                  href="/tipos-objeto" 
+                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
+                    isActive('/tipos-objeto') 
+                      ? 'text-primary bg-primary-50' 
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  }`}
+                >
                   <span className="mr-3">🏷️</span>
                   Tipos de Objetos
                 </a>
-                <a href="#" className="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900">
-                  <span className="mr-3">📊</span>
-                  Estadísticas
+                <a 
+                  href="/recomendaciones" 
+                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
+                    isActive('/recomendaciones') 
+                      ? 'text-primary bg-primary-50' 
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  }`}
+                >
+                  <span className="mr-3">🤖</span>
+                  Recomendaciones
                 </a>
               </div>
             </div>
