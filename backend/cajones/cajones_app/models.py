@@ -11,7 +11,7 @@ class Cajon(models.Model):
     
     
 class CajonHistorial(models.Model):
-    cajon = models.ForeignKey(Cajon, on_delete=models.CASCADE, related_name='historial')
+    cajon = models.ForeignKey(Cajon, on_delete=models.CASCADE, related_name='historial_entries')
     fecha = models.DateTimeField(auto_now_add=True)
     accion = models.CharField(max_length=100)  # e.g., 'creado', 'modificado', 'eliminado'
     descripcion = models.TextField(blank=True, null=True)

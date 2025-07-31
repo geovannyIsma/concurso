@@ -31,9 +31,3 @@ class CajonObjetoAdmin(admin.ModelAdmin):
     list_filter = ('tamanio', 'tipo_objeto')
     ordering = ('cajon__nombre', 'nombre_objeto')
     raw_id_fields = ('cajon', 'tipo_objeto')
-
-# Ensure that the models are registered with the admin site
-admin.site.register(Cajon)
-admin.site.register(CajonHistorial)
-admin.site.register(TipoObjeto)
-admin.site.register(CajonObjeto)
